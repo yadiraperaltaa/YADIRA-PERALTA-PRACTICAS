@@ -1,0 +1,64 @@
+from machine import Pin, I2C
+import network
+import time
+import ntptime
+from lcd_i2c import I2cLcd
+
+# ===== WIFI =====
+SSID = "LIKENET-BYRON"
+PASSWORD = "010727655247"
+
+# ===== LCD =====
+i2c = I2C(0, scl=Pin(22), sda=Pin(21))
+lcd = I2cLcd(0x27, 2, 16)
+
+# ===== CONECTAR WIFI =====
+wifi = network.WLAN(network.STA_IF)
+
+wifi.active(False)
+time.sleep(2)
+wifi.active(True)
+time.sleep(2)
+
+wifi.connect(SSID, PASSWORD)
+
+lcd.clear()
+lcd.putstr("Conectando WiFi")
+
+while not wifi.isconnected():
+    time.sleep(0.5)
+
+lcd.clear()
+lcd.putstr("WiFi OK")
+time.sleep(1)
+
+# ===== SINCRONIZAR HORA =====
+lcd.clear()
+lcd.putstr("Sincronizando")
+
+for _ in range(5):
+    try:
+        ntptime.settime()
+        break
+    except:
+        time.sleep(1)
+
+# ===== USAR HORA DIRECTA =====
+def hora_actual():
+    return time.localtime()
+
+# ===== LOOP =====
+while True:
+    t = hora_actual()
+
+    hora = "{:02d}:{:02d}:{:02d}".format(t[3], t[4], t[5])
+
+    # Línea 1 → Hora
+    lcd.move_to(0, 0)
+    lcd.putstr("Hora: " + hora + " ")
+
+    # Línea 2 → Nombres
+    lcd.move_to(0, 1)
+    lcd.putstr(" YADIRA  ")
+
+    time.sleep(1)
