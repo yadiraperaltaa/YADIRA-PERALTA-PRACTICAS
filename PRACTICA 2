@@ -1,0 +1,68 @@
+from machine import Pin, I2C
+from time import sleep
+
+# Configuración I2C
+i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
+
+direccion = 0x27
+
+def enviar(dato, modo):
+    alto = modo | (dato & 0xF0) | 0x08
+    bajo = modo | ((dato << 4) & 0xF0) | 0x08
+    
+    i2c.writeto(direccion, bytes([alto]))
+    i2c.writeto(direccion, bytes([alto | 0x04]))
+    i2c.writeto(direccion, bytes([alto]))
+    
+    i2c.writeto(direccion, bytes([bajo]))
+    i2c.writeto(direccion, bytes([bajo | 0x04]))
+    i2c.writeto(direccion, bytes([bajo]))
+
+def comando(cmd):
+    enviar(cmd, 0)
+
+def escribir(txt):
+    for c in txt:
+        enviar(ord(c), 1)
+
+def init_lcd():
+    sleep(0.05)
+    comando(0x33)
+    comando(0x32)
+    comando(0x28)
+    comando(0x0C)
+    comando(0x06)
+    comando(0x01)
+    sleep(0.01)
+
+def cursor(x, y):
+    pos = 0x80 + x + (0x40 * y)
+    comando(pos)
+
+# Inicializar
+init_lcd()
+
+while True:
+    comando(0x01)
+    
+    cursor(0, 0)
+    escribir("sebas")
+    
+    cursor(0, 1)
+    escribir("cmf ese free")
+    
+    sleep(2)
+
+    # Scroll manual
+    for i in range(16):
+        comando(0x01)
+        
+        cursor(1 + i, 0)
+        escribir("sebas")
+        
+        cursor(1 + i, 1)
+        escribir("cmf ese free")
+        
+        sleep(0.3)
+
+    sleep(1)
