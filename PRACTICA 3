@@ -5,25 +5,29 @@ from lcd_i2c import I2cLcd
 i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
 
 lcd = I2cLcd(0x27, 2, 16)
-cara_feliz = [
+
+# Corazón personalizado
+corazon = [
     0b00000,
     0b01010,
-    0b01010,
-    0b00000,
-    0b10001,
+    0b11111,
+    0b11111,
+    0b11111,
     0b01110,
-    0b00000,
+    0b00100,
     0b00000
 ]
 
-lcd.custom_char(0, cara_feliz)
+# Guardar carácter en posición 0
+lcd.custom_char(0, corazon)
 
 lcd.clear()
+
 lcd.move_to(0, 0)
 lcd.putstr("Hola!")
 
 lcd.move_to(0, 1)
-lcd.putchar(chr(0))
+lcd.putchar(chr(0))  # Mostrar corazón
 
 while True:
     sleep(1)
