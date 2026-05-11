@@ -1,0 +1,12 @@
+from machine import Pin, I2C
+from lcd_i2c import I2Lcd
+from time import sleep
+i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
+lcd = I2cLcd(0x27, 2, 16)
+
+lcd.clear()
+lcd.move_to(0, 0)
+lcd.putstr("YADII <3")
+
+lcd.move_to(0, 1)
+lcd.putstr("BIENVENIDO")
