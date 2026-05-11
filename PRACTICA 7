@@ -1,0 +1,114 @@
+f	~!Qrom machine import Pin, I2C
+from time import sleep
+
+# -------- LCD --------
+LCD_ADDR = 0x27
+i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
+
+def lcd_byte(bits, mode):
+    high = mode | (bits & 0xF0) | 0x08
+    low = mode | ((bits << 4) & 0xF0) | 0x08
+    
+    i2c.writeto(LCD_ADDR, bytes([high]))
+    i2c.writeto(LCD_ADDR, bytes([high | 0x04]))
+    i2c.writeto(LCD_ADDR, bytes([high]))
+    
+    i2c.writeto(LCD_ADDR, bytes([low]))
+    i2c.writeto(LCD_ADDR, bytes([low | 0x04]))
+    i2c.writeto(LCD_ADDR, bytes([low]))
+
+def lcd_cmd(cmd):
+    lcd_byte(cmd, 0)
+
+def lcd_data(data):
+    lcd_byte(data, 1)
+
+def lcd_init():
+    lcd_cmd(0x33)
+    lcd_cmd(0x32)
+    lcd_cmd(0x28)
+    lcd_cmd(0x0C)
+    lcd_cmd(0x06)
+    lcd_cmd(0x01)
+    sleep(0.2)
+
+def lcd_clear():
+    lcd_cmd(0x01)
+    sleep(0.2)
+
+def lcd_putstr(text):
+    for char in text:
+        lcd_data(ord(char))
+
+def lcd_move(col, row):
+    pos = [0x80, 0xC0, 0x94, 0xD4]
+    lcd_cmd(pos[row] + col)
+
+# -------- KEYPAD (TUS PINES) --------
+filas = [
+    Pin(19, Pin.OUT),
+    Pin(18, Pin.OUT),
+    Pin(5, Pin.OUT),
+    Pin(17, Pin.OUT)
+]
+
+columnas = [
+    Pin(16, Pin.IN, Pin.PULL_DOWN),
+    Pin(4, Pin.IN, Pin.PULL_DOWN),
+    Pin(2, Pin.IN, Pin.PULL_DOWN),
+    Pin(15, Pin.IN, Pin.PULL_DOWN)
+]
+0
+teclas = [
+    ['1','2','3','A'],
+    ['4','5','6','B'],
+    ['7','8','9','C'],
+    ['*','0','#','D']
+]
+
+def leer_tecla():
+    for i, fila in enumerate(filas):
+        fila.value(1)
+        for j, col in enumerate(columnas):
+            if col.value() == 1:
+                fila.value(0)
+                return teclas[i][j]
+        fila.value(0)
+    return None
+
+# -------- CONTRASEÑA --------
+clave = "1234"
+password = ""
+
+# -------- INICIO --------
+lcd_init()
+lcd_move(3, 1)
+lcd_putstr("Bienvenidos")
+sleep(1.5)
+
+lcd_clear()
+lcd_putstr("Clave:")
+
+# -------- LOOP --------
+while True:
+    tecla = leer_tecla()
+    
+    if tecla:
+        if tecla.isdigit():
+            lcd_putstr(tecla)
+            password += tecla
+            sleep(0.3)
+        
+        if tecla == 'A':
+            lcd_clear()
+            
+            if password == clave:
+                lcd_putstr("Correcto")
+            else:
+                lcd_putstr("Incorrecto")
+            
+            password = ""
+            sleep(1.5)
+            
+            lcd_clear()
+            lcd_putstr("Clave:")
