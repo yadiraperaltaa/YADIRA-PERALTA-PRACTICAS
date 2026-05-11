@@ -1,0 +1,29 @@
+from machine import I2C, Pin
+from time import sleep
+from lcd_i2c import I2cLcd
+
+i2c = I2C(0, scl=Pin(22), sda=Pin(21), freq=400000)
+
+lcd = I2cLcd(0x27, 2, 16)
+cara_feliz = [
+    0b00000,
+    0b01010,
+    0b01010,
+    0b00000,
+    0b10001,
+    0b01110,
+    0b00000,
+    0b00000
+]
+
+lcd.custom_char(0, cara_feliz)
+
+lcd.clear()
+lcd.move_to(0, 0)
+lcd.putstr("Hola!")
+
+lcd.move_to(0, 1)
+lcd.putchar(chr(0))
+
+while True:
+    sleep(1)
