@@ -1,0 +1,39 @@
+from machine import Pin
+import time
+
+# Definir filas y columnas
+filas = [Pin(19, Pin.OUT), Pin(18, Pin.OUT), Pin(5, Pin.OUT), Pin(17, Pin.OUT)]
+columnas = [Pin(16, Pin.IN, Pin.PULL_DOWN),
+            Pin(4, Pin.IN, Pin.PULL_DOWN),
+            Pin(2, Pin.IN, Pin.PULL_DOWN),
+            Pin(15, Pin.IN, Pin.PULL_DOWN)]
+
+# Mapa de teclas
+teclas = [
+    ['1', '2', '3', 'A'],
+    ['4', '5', '6', 'B'],
+    ['7', '8', '9', 'C'],
+    ['*', '0', '#', 'D']
+]
+
+def leer_tecla():
+    for i, fila in enumerate(filas):
+        fila.on()  # Activar fila
+        
+        for j, col in enumerate(columnas):
+            if col.value() == 1:
+                fila.off()
+                return teclas[i][j]
+        
+        fila.off()
+    
+    return None
+
+print("Teclado listo...")
+
+while True:
+    tecla = leer_tecla()
+    
+    if tecla:
+        print("Presionaste:", tecla)
+        time.sleep(0.3)  # anti-rebote
